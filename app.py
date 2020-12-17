@@ -21,8 +21,6 @@ moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
 
-# TODO: connect to a local postgresql database
-
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
@@ -61,12 +59,14 @@ class Artist(db.Model):
 # Filters.
 #----------------------------------------------------------------------------#
 
+
 def format_datetime(value, format='medium'):
   date = dateutil.parser.parse(value)
   if format == 'full':
       format="EEEE MMMM, d, y 'at' h:mma"
   elif format == 'medium':
       format="EE MM, dd, y h:mma"
+  print('expecting some', date, ' the date')
   return babel.dates.format_datetime(date, format)
 
 app.jinja_env.filters['datetime'] = format_datetime
@@ -346,6 +346,7 @@ def show_artist(artist_id):
     "upcoming_shows_count": 3,
   }
   data = list(filter(lambda d: d['id'] == artist_id, [data1, data2, data3]))[0]
+  # print(data)
   return render_template('pages/show_artist.html', artist=data)
 
 #  Update
@@ -487,9 +488,11 @@ def create_show_submission():
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   return render_template('pages/home.html')
 
+
 @app.errorhandler(404)
 def not_found_error(error):
     return render_template('errors/404.html'), 404
+
 
 @app.errorhandler(500)
 def server_error(error):
