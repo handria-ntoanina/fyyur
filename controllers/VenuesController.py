@@ -10,20 +10,22 @@ from models import Venue
 
 @app.route('/venues')
 def venues():
-	area = db.session.query(Venue.city, Venue.state).group_by(Venue.city, Venue.state).order_by(Venue.city, Venue.state).all()
+	area = db.session.query(Venue.city, Venue.state).group_by(Venue.city, Venue.state).order_by(Venue.city,
+																								Venue.state).all()
 	data = []
 	
 	class Area:
 		city = ''
 		state = ''
 		venues = None
+	
 	for city, state in area:
 		a = Area()
 		a.city = city
 		a.state = state
 		a.venues = Venue.query.filter(and_(Venue.city == city, Venue.state == state)).order_by(Venue.name).all()
 		data.append(a)
-		
+	
 	return render_template('pages/venues.html', areas=data);
 
 
@@ -59,11 +61,28 @@ def create_venue_submission():
 	# TODO: insert form data as a new Venue record in the db, instead
 	# TODO: modify data to be the data object returned from db insertion
 	
-	# on successful db insert, flash success
-	flash('Venue ' + request.form['name'] + ' was successfully listed!')
-	# TODO: on unsuccessful db insert, flash an error instead.
-	# e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
-	# see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
+	try:
+		venue = Venue()
+		venue.name = request.form['name']
+		venue.city = request.form['city']
+		venue.state = request.form['state']
+		venue.address = request.form['address']
+		venue.phone = request.form['phone']
+		venue.image_link = request.form['image_link']
+		venue.facebook_link = request.form['facebook_link']
+		venue.genres = request.form.getlist('genres')
+		venue.website = request.form['website']
+		venue.seeking_venue = request.form['seeking_venue']
+		venue.seeking_description = request.form['seeking_description']
+		db.session.add(venue)
+		db.session.commit()
+		flash('Venue ' + request.form['name'] + ' was successfully listed!')
+	except:
+		db.session.rollback()
+		flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
+	finally:
+		db.session.close()
+	
 	return render_template('pages/home.html')
 
 
