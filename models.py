@@ -18,7 +18,7 @@ class Venue(db.Model):
 	phone = db.Column(db.String(120))
 	image_link = db.Column(db.String(500))
 	facebook_link = db.Column(db.String(120))
-	genres = db.Column(db.ARRAY(db.String(120)))
+	genres = db.Column(db.ARRAY(db.String()))
 	website = db.Column(db.String(120))
 	seeking_venue = db.Column(db.Boolean, nullable=False, default=False)
 	seeking_description = db.Column(db.String())
@@ -52,7 +52,7 @@ class Artist(db.Model):
 	city = db.Column(db.String(120))
 	state = db.Column(db.String(120))
 	phone = db.Column(db.String(120))
-	genres = db.Column(db.ARRAY(db.String(120)))
+	genres = db.Column(db.ARRAY(db.String()))
 	image_link = db.Column(db.String(500))
 	facebook_link = db.Column(db.String(120))
 	website = db.Column(db.String(120))
@@ -79,6 +79,7 @@ class Artist(db.Model):
 	def __repr__(self):
 		return f'<Artist ID:{self.id}, name:{self.name}>'
 
+
 class Show(db.Model):
 	__tablename__ = 'Show'
 	id = db.Column(db.Integer, primary_key=True)
@@ -86,5 +87,21 @@ class Show(db.Model):
 	artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable=False)
 	start_time = db.Column(db.DateTime, nullable=False)
 
+	@property
+	def venue_name(self):
+		return self.venue.name if self.venue else ""
+
+	@property
+	def venue_image_link(self):
+		return self.venue.image_link if self.venue else ""
+	
+	@property
+	def artist_name(self):
+		return self.artist.name if self.artist else ""
+	
+	@property
+	def artist_image_link(self):
+		return self.artist.image_link if self.artist else ""
+		
 	def __repr__(self):
 		return f'<Show ID:{self.id}, Venue:{self.venue.name}, Artist:{self.artist.name}>'

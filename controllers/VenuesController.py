@@ -1,6 +1,8 @@
 from flask import render_template, request, flash, redirect, url_for
 from forms.VenueForm import VenueForm
-from initializer import app
+from sqlalchemy import and_
+from initializer import app, db
+from models import Venue
 
 
 #  Venues
@@ -8,56 +10,39 @@ from initializer import app
 
 @app.route('/venues')
 def venues():
-	# TODO: replace with real venues data.
-	#       num_shows should be aggregated based on number of upcoming shows per venue.
-	data = [{
-		"city": "San Francisco",
-		"state": "CA",
-		"venues": [{
-			"id": 1,
-			"name": "The Musical Hop",
-			"num_upcoming_shows": 0,
-		}, {
-			"id": 3,
-			"name": "Park Square Live Music & Coffee",
-			"num_upcoming_shows": 1,
-		}]
-	}, {
-		"city": "New York",
-		"state": "NY",
-		"venues": [{
-			"id": 2,
-			"name": "The Dueling Pianos Bar",
-			"num_upcoming_shows": 0,
-		}]
-	}]
+	area = db.session.query(Venue.city, Venue.state).group_by(Venue.city, Venue.state).order_by(Venue.city, Venue.state).all()
+	data = []
+	
+	class Area:
+		city = ''
+		state = ''
+		venues = None
+	for city, state in area:
+		a = Area()
+		a.city = city
+		a.state = state
+		a.venues = Venue.query.filter(and_(Venue.city == city, Venue.state == state)).order_by(Venue.name).all()
+		data.append(a)
+		
 	return render_template('pages/venues.html', areas=data);
 
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
-	# TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-	# seach for Hop should return "The Musical Hop".
-	# search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
+	search_term = request.form.get('search_term', '')
+	query = Venue.query.filter(Venue.name.ilike(f'%{search_term}%')).order_by(Venue.name)
 	response = {
-		"count": 1,
-		"data": [{
-			"id": 2,
-			"name": "The Dueling Pianos Bar",
-			"num_upcoming_shows": 0,
-		}]
+		"count": query.count(),
+		"data": query.all()
 	}
-	return render_template('pages/search_venues.html', results=response,
-						   search_term=request.form.get('search_term', ''))
+	
+	return render_template('pages/search_venues.html', results=response, search_term=search_term)
 
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
 	# shows the venue page with the given venue_id
-	# TODO: replace with real venue data from the venues table, using venue_id
-	
-	data = list(filter(lambda d: d['id'] == venue_id, [data1, data2, data3]))[0]
-	return render_template('pages/show_venue.html', venue=data)
+	return render_template('pages/show_venue.html', venue=Venue.query.get(venue_id))
 
 
 #  Create Venue
@@ -89,7 +74,10 @@ def delete_venue(venue_id):
 	
 	# BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
 	# clicking that button delete it from the db then redirect the user to the homepage
-	return None
+	db.session.delete(Venue.query.get(venue_id))
+	db.session.commit()
+	return redirect(url_for('index'))
+
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
