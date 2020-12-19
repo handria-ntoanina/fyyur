@@ -1,4 +1,7 @@
 babel
 python-dateutil==2.6.0
+flask
 flask-moment
 flask-wtf
+wtforms
+sqlalchemy
