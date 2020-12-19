@@ -3,7 +3,7 @@ from forms.VenueForm import VenueForm
 from sqlalchemy import and_
 from initializer import app, db
 from models import Venue
-
+import traceback
 
 #  Venues
 #  ----------------------------------------------------------------
@@ -72,13 +72,14 @@ def create_venue_submission():
 		venue.facebook_link = request.form['facebook_link']
 		venue.genres = request.form.getlist('genres')
 		venue.website = request.form['website']
-		venue.seeking_venue = request.form['seeking_venue']
+		venue.seeking_talent = 'seeking_talent' in request.form
 		venue.seeking_description = request.form['seeking_description']
 		db.session.add(venue)
 		db.session.commit()
 		flash('Venue ' + request.form['name'] + ' was successfully listed!')
 	except:
 		db.session.rollback()
+		traceback.print_exc()
 		flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
 	finally:
 		db.session.close()
