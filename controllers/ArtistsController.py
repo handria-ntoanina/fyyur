@@ -1,8 +1,8 @@
 from flask import render_template, request, flash, redirect, url_for
 from forms.ArtistForm import ArtistForm
-from initializer import app
+from initializer import app, db
 from models import Artist
-
+import traceback
 
 #  Artists
 #  ----------------------------------------------------------------
@@ -71,12 +71,26 @@ def create_artist_form():
 
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
-	# called upon submitting the new artist listing form
-	# TODO: insert form data as a new Venue record in the db, instead
-	# TODO: modify data to be the data object returned from db insertion
+	try:
+		artist = Artist()
+		artist.name = request.form['name']
+		artist.city = request.form['city']
+		artist.state = request.form['state']
+		artist.phone = request.form['phone']
+		artist.image_link = request.form['image_link']
+		artist.facebook_link = request.form['facebook_link']
+		artist.genres = request.form.getlist('genres')
+		artist.website = request.form['website']
+		artist.seeking_venue = 'seeking_venue' in request.form
+		artist.seeking_description = request.form['seeking_description']
+		db.session.add(artist)
+		db.session.commit()
+		flash('Artist ' + request.form['name'] + ' was successfully listed!')
+	except:
+		db.session.rollback()
+		traceback.print_exc()
+		flash('An error occurred. Artist ' + request.form['name'] + ' could not be listed.')
+	finally:
+		db.session.close()
 	
-	# on successful db insert, flash success
-	flash('Artist ' + request.form['name'] + ' was successfully listed!')
-	# TODO: on unsuccessful db insert, flash an error instead.
-	# e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
 	return render_template('pages/home.html')

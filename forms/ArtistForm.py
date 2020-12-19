@@ -1,5 +1,6 @@
 from flask_wtf import Form
-from wtforms import StringField, SelectField, SelectMultipleField
+from wtforms import StringField, SelectField, SelectMultipleField, BooleanField
+from wtforms.widgets import TextArea
 from wtforms.validators import DataRequired, URL
 
 
@@ -99,8 +100,10 @@ class ArtistForm(Form):
         ]
     )
     facebook_link = StringField(
-        # TODO implement enum restriction
         'facebook_link', validators=[URL()]
     )
-
-# TODO IMPLEMENT NEW ARTIST FORM AND NEW SHOW FORM
+    website = StringField(
+        'website', validators=[URL()]
+    )
+    seeking_venue = BooleanField('Seeking for a venue')
+    seeking_description = StringField('seeking_description', widget=TextArea())
