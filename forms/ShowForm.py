@@ -1,19 +1,21 @@
 from datetime import datetime
 from flask_wtf import Form
-from wtforms import StringField, DateTimeField
+from wtforms import IntegerField, DateTimeField
 from wtforms.validators import DataRequired
 
 
 class ShowForm(Form):
-    artist_id = StringField(
-        'artist_id'
+    artist_id = IntegerField(
+        'artist_id',
+        validators=[DataRequired()]
     )
-    venue_id = StringField(
-        'venue_id'
+    venue_id = IntegerField(
+        'venue_id',
+        validators=[DataRequired()]
     )
     start_time = DateTimeField(
         'start_time',
         validators=[DataRequired()],
-        default= datetime.today()
+        default=datetime.today()
     )
 

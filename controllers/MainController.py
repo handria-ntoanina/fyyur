@@ -1,5 +1,6 @@
 from flask import render_template
 from initializer import app
+from models import Artist, Venue
 
 
 # ----------------------------------------------------------------------------#
@@ -8,7 +9,9 @@ from initializer import app
 
 @app.route('/')
 def index():
-	return render_template('pages/home.html')
+	artists = Artist.query.order_by(Artist.id.desc()).limit(10).all()
+	venues = Venue.query.order_by(Venue.id.desc()).limit(10).all()
+	return render_template('pages/home.html', artists=artists, venues=venues)
 
 
 @app.errorhandler(404)
