@@ -18,10 +18,11 @@ class Venue(db.Model):
 	phone = db.Column(db.String(120))
 	image_link = db.Column(db.String(500))
 	facebook_link = db.Column(db.String(120))
-	genres = db.Column(db.String(120))
+	genres = db.Column(db.ARRAY(db.String(120)))
 	website = db.Column(db.String(120))
 	seeking_venue = db.Column(db.Boolean, nullable=False, default=False)
 	seeking_description = db.Column(db.String())
+	shows = db.relationship('Show', backref='venue', lazy=True, cascade='all, delete-orphan')
 
 	@property
 	def past_shows(self):
@@ -39,6 +40,9 @@ class Venue(db.Model):
 	def upcoming_shows_count(self):
 		return Show.query.filter(and_(Show.venue_id == self.id, Show.start_time < datetime.now())).count()
 
+	def __repr__(self):
+		return f'<Venue ID:{self.id}, name:{self.name}>'
+
 
 class Artist(db.Model):
 	__tablename__ = 'Artist'
@@ -48,14 +52,13 @@ class Artist(db.Model):
 	city = db.Column(db.String(120))
 	state = db.Column(db.String(120))
 	phone = db.Column(db.String(120))
-	genres = db.Column(db.String(120))
+	genres = db.Column(db.ARRAY(db.String(120)))
 	image_link = db.Column(db.String(500))
 	facebook_link = db.Column(db.String(120))
 	website = db.Column(db.String(120))
 	seeking_venue = db.Column(db.Boolean, nullable=False, default=False)
 	seeking_description = db.Column(db.String())
 	shows = db.relationship('Show', backref='artist', lazy=True, cascade='all, delete-orphan')
-	past_shows = db.relationship('Todo', backref='list', lazy=True, cascade='all, delete-orphan')
 	
 	@property
 	def past_shows(self):
@@ -73,6 +76,8 @@ class Artist(db.Model):
 	def upcoming_shows_count(self):
 		return Show.query.filter(and_(Show.artist_id == self.id, Show.start_time < datetime.now())).count()
 
+	def __repr__(self):
+		return f'<Artist ID:{self.id}, name:{self.name}>'
 
 class Show(db.Model):
 	__tablename__ = 'Show'
@@ -80,3 +85,6 @@ class Show(db.Model):
 	venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable=False)
 	artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable=False)
 	start_time = db.Column(db.DateTime, nullable=False)
+
+	def __repr__(self):
+		return f'<Show ID:{self.id}, Venue:{self.venue.name}, Artist:{self.artist.name}>'
